@@ -1,0 +1,38 @@
+# https://www.dropwizard.io/en/stable/manual/configuration.html#servers
+
+server:
+  # Default: false
+  # Description: Whether to enable virtual threads for Jetty's thread pool.
+  enableVirtualThreads: ${ENABLE_VIRTUAL_THREADS:-false}
+
+  # https://www.dropwizard.io/en/stable/manual/configuration.html#gzip
+  gzip:
+    # Default: true
+    # Description: If true, all requests with gzip in the Accept-Encoding header will have their response entities
+    # compressed and requests with gzip in the Content-Encoding header will have their request entities decompressed.
+    enabled: true
+
+  # HTTP connector configuration for handling large request headers
+  # Default: 16KB (16000 bytes) - matches ALB/Nginx request line limit
+  # Description: Maximum size of request headers to prevent 431 errors from long URLs with many filters
+  applicationConnectors:
+    - type: http
+      # Default: 8080
+      # Description: The port on which the application HTTP connector listens
+      port: ${SERVER_APPLICATION_PORT:-8080}
+      maxRequestHeaderSize: ${SERVER_MAX_REQUEST_HEADER_SIZE:-16KB}
+      # Default: 1m
+      # Description: The maximum idle time for a connection, after which it will be closed.
+      idleTimeout: ${SERVER_IDLE_TIMEOUT:-1m}
+
+  adminConnectors:
+    - type: http
+      # Default: 8081
+      # Description: The port on which the admin HTTP connector listens
+      port: ${SERVER_ADMIN_PORT:-8081}
+
+logging:
+  level: INFO
+  loggers:
+    com.example: DEBUG
+

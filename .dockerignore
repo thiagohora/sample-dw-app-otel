@@ -1,0 +1,10 @@
+target/
+*.jar
+.git/
+.gitignore
+.idea/
+.vscode/
+*.iml
+.DS_Store
+opentelemetry-javaagent.jar
+
