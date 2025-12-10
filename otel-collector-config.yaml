@@ -10,35 +10,34 @@ processors:
   batch:
     timeout: 1s
     send_batch_size: 1024
-  memory_limiter:
-    limit_mib: 512
 
 exporters:
   prometheus:
-    endpoint: "0.0.0.0:8888"
+    endpoint: "0.0.0.0:8889"
   
   otlp/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
-  
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [batch]
       exporters: [otlp/tempo]
     
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [batch]
       exporters: [prometheus]
     
-    logs:
-      receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [loki]
+    # Logs are collected via Promtail from Docker container logs and sent to Loki
+    # The Loki exporter is not available in otel-collector-contrib, so we use Promtail instead
+    # Promtail reads from /var/lib/docker/containers/*/*-json.log and sends to Loki
+    # Logs are visible in Grafana via the Loki datasource
+    # logs:
+    #   receivers: [otlp]
+    #   processors: [batch]
+    #   exporters: [loki]  # Not available in otel-collector-contrib
 
