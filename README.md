@@ -200,12 +200,16 @@ Metrics should appear under the configured metrics backend (Prometheus, console,
 ## Actual Behavior (Bug)
 
 When `enableVirtualThreads: false`:
-- No HTTP server metrics are reported
-- Request/response metrics are missing
-- Only traces and some basic metrics may be present
+- **OpenTelemetry HTTP metrics ARE present** (e.g., `http_server_request_duration_seconds_bucket`)
+  - These come from the OpenTelemetry Java agent instrumentation
+  - They work correctly regardless of virtual threads setting
+- **Dropwizard built-in metrics are MISSING** (e.g., `io.dropwizard.jetty.MutableServletContextHandler.requests`)
+  - These come from Dropwizard's own instrumentation
+  - They are not collected when virtual threads are disabled
+  - This is the actual bug being reproduced
 
 When `enableVirtualThreads: true`:
-- HTTP metrics appear to be collected correctly
+- Both OpenTelemetry metrics AND Dropwizard built-in metrics are collected correctly
 
 ## Environment
 
@@ -228,6 +232,50 @@ java \
 ```
 
 Then check metrics at `http://localhost:9464/metrics`.
+
+## Testing the Issue
+
+A script is provided to automatically test and demonstrate the issue:
+
+```bash
+./test-metrics-issue.sh
+```
+
+This script will:
+1. Check that all services (Prometheus, Collector, App) are available
+2. Generate traffic to the application (default: 50 requests)
+3. Wait for metrics to be exported (65 seconds for OpenTelemetry's 60-second export interval)
+4. Check for OpenTelemetry HTTP metrics (should be present)
+5. Check for Dropwizard built-in metrics (should be missing when virtual threads disabled)
+6. Provide a clear summary of what's working vs what's missing
+
+### Customizing the Test
+
+You can run it with custom parameters:
+
+```bash
+# Generate more requests
+REQUESTS=100 ./test-metrics-issue.sh
+
+# Use different endpoints
+PROMETHEUS_URL=http://localhost:9090 COLLECTOR_METRICS_URL=http://localhost:8889 ./test-metrics-issue.sh
+```
+
+### Expected Output
+
+When the issue is reproduced (virtual threads disabled), you should see:
+
+```
+✓ ISSUE REPRODUCED:
+  When enableVirtualThreads: false:
+    ✓ OpenTelemetry HTTP metrics: Present (from OTel Java agent)
+    ✗ Dropwizard built-in metrics: Missing (from Dropwizard instrumentation)
+```
+
+The script will also provide:
+- Sample Prometheus queries to manually inspect metrics
+- Direct URLs to check metrics in Prometheus UI
+- Instructions on how to verify the fix (enable virtual threads)
 
 ## Related Issue
 

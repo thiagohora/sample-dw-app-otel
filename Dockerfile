@@ -46,10 +46,10 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 # Run the application with OpenTelemetry agent
 # Wait for otel-collector to be ready, then start the app
-ENTRYPOINT ["/app/wait-for-otel.sh", "otel-collector", "4317", "java", \
+ENTRYPOINT ["/app/wait-for-otel.sh", "otel-collector", "4318", "java", \
     "-javaagent:/app/opentelemetry-javaagent.jar", \
     "-Dotel.service.name=dropwizard-app", \
-    "-Dotel.exporter.otlp.endpoint=http://otel-collector:4317", \
+    "-Dotel.exporter.otlp.endpoint=http://otel-collector:4318", \
     "-Dotel.metrics.exporter=otlp", \
     "-Dotel.traces.exporter=otlp", \
     "-Dotel.logs.exporter=otlp", \

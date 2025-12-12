@@ -13,7 +13,7 @@ services:
     networks:
       - observability
     healthcheck:
-      test: ["CMD-SHELL", "timeout 1 bash -c 'echo > /dev/tcp/localhost/4317' || exit 1"]
+      test: ["CMD-SHELL", "timeout 1 bash -c 'echo > /dev/tcp/localhost/4318' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -36,6 +36,7 @@ services:
       - OTEL_LOG_LEVEL=DEBUG
       - OTEL_JAVAAGENT_DEBUG=true
       - OTEL_JAVA_GLOBAL_LOGGER_PROVIDER=slf4j
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
     ports:
       - "8080:8080"
       - "8081:8081"
